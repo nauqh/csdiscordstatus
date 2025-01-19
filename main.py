@@ -4,14 +4,11 @@ import pandas as pd
 import sqlite3
 
 
-# Initialize session state for selected query if it doesn't exist
 if 'selected_query' not in st.session_state:
     st.session_state.selected_query = ""
 
-# Read SQL scripts from file
 with open('script.sql', 'r') as f:
     scripts = f.read().split(';')
-    # Remove empty scripts and strip whitespace
     scripts = [s.strip() for s in scripts if s.strip()]
 
 st.set_page_config(

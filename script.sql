@@ -29,42 +29,6 @@ GROUP BY
 ORDER BY
     thread_count DESC;
 
--- Avg Response time by month
-WITH
-    ResponseMessage AS (
-        SELECT
-            id AS message_id,
-            thread_id,
-            created_at AS response_time
-        FROM
-            messages
-    ),
-    ResponseTimes AS (
-        SELECT
-            t.name AS thread_name,
-            t.created_at AS thread_created_at,
-            (
-                strftime ('%s', rm.response_time) - strftime ('%s', t.created_at)
-            ) / 60.0 AS response_time_mins,
-            strftime ('%Y-%m', t.created_at) AS month
-        FROM
-            threads t
-            JOIN ResponseMessage rm ON t.response_msg_id = rm.message_id
-        WHERE
-            (
-                strftime ('%s', rm.response_time) - strftime ('%s', t.created_at)
-            ) / 60.0 < 120
-    )
-SELECT
-    month,
-    AVG(response_time_mins) AS avg_response_time_mins
-FROM
-    ResponseTimes
-GROUP BY
-    month
-ORDER BY
-    month;
-
 -- Response time per Thread
 WITH
     ResponseMessage AS (
