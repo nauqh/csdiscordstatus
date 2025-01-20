@@ -152,3 +152,81 @@ GROUP BY
 ORDER BY
     guild_name,
     month;
+
+-- Thread Resolution Time Analysis
+SELECT
+    t.name as thread_name,
+    t.created_at as started_at,
+    MAX(m.created_at) as last_message,
+    (
+        strftime ('%s', MAX(m.created_at)) - strftime ('%s', t.created_at)
+    ) / 3600.0 as resolution_hours
+FROM
+    threads t
+    JOIN messages m ON t.id = m.thread_id
+GROUP BY
+    t.id
+ORDER BY
+    resolution_hours DESC;
+
+-- Activity by Hour of Day
+SELECT
+    strftime ('%H', m.created_at) as hour,
+    COUNT(*) as message_count
+FROM
+    messages m
+GROUP BY
+    hour
+ORDER BY
+    hour;
+
+-- Thread Complexity Analysis
+SELECT
+    t.name,
+    COUNT(m.id) as message_count,
+    COUNT(DISTINCT m.user_id) as participant_count,
+    COUNT(m.id) * 1.0 / COUNT(DISTINCT m.user_id) as messages_per_participant
+FROM
+    threads t
+    JOIN messages m ON t.id = m.thread_id
+GROUP BY
+    t.id
+HAVING
+    message_count > 5
+ORDER BY
+    messages_per_participant DESC;
+
+-- User Engagement Patterns
+SELECT
+    u.name,
+    COUNT(DISTINCT DATE (m.created_at)) as days_active,
+    COUNT(m.id) as total_messages,
+    COUNT(m.id) * 1.0 / COUNT(DISTINCT DATE (m.created_at)) as msgs_per_active_day,
+    AVG(LENGTH (m.content)) as avg_message_length
+FROM
+    users u
+    JOIN messages m ON u.id = m.user_id
+GROUP BY
+    u.id
+HAVING
+    total_messages > 10
+ORDER BY
+    msgs_per_active_day DESC;
+
+-- Thread Categories by Response Pattern
+SELECT
+    t.name,
+    CASE
+        WHEN COUNT(m.id) <= 3 THEN 'Quick Resolution'
+        WHEN COUNT(m.id) > 10 THEN 'Complex Discussion'
+        ELSE 'Normal Thread'
+    END as thread_type,
+    COUNT(m.id) as message_count,
+    COUNT(DISTINCT m.user_id) as participant_count
+FROM
+    threads t
+    JOIN messages m ON t.id = m.thread_id
+GROUP BY
+    t.id
+ORDER BY
+    message_count DESC;
