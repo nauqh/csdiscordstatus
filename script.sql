@@ -1,3 +1,14 @@
+-- Question answered by Month
+SELECT
+    strftime ('%Y-%m', created_at) AS month,
+    COUNT(*) AS thread_count
+FROM
+    threads
+GROUP BY
+    strftime ('%Y-%m', created_at)
+ORDER BY
+    month;
+
 -- Participation
 SELECT
     r.name,
